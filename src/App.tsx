@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, Play, X, Gamepad2, TrendingUp, Clock, Star, LayoutGrid, Ghost } from 'lucide-react';
+import { Search, Play, X, Gamepad2, TrendingUp, Clock, Star, LayoutGrid, Ghost, Globe, Bot, Send, User, Sparkles, Brain, Calculator, MessageSquare, ExternalLink, RefreshCw } from 'lucide-react';
+import { GoogleGenAI } from "@google/genai";
 import { GAMES_DATA, type Game } from './games';
 import Game2048 from './components/Game2048';
 
@@ -17,6 +18,25 @@ export default function App() {
   const [theaterMode, setTheaterMode] = useState(false);
   const [useAltMirror, setUseAltMirror] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState('Idle');
+  const [proxyQuery, setProxyQuery] = useState('');
+  const [proxyUrl, setProxyUrl] = useState<string | null>(null);
+  const [browserInput, setBrowserInput] = useState('');
+  
+  // AI Chat State
+  const [aiMessage, setAiMessage] = useState('');
+  const [chatHistory, setChatHistory] = useState<{ role: 'user' | 'ai', content: string }[]>([]);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === '`') {
+        window.location.href = 'https://google.com';
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const filteredGames = useMemo(() => {
     return GAMES_DATA.filter(game => {
@@ -31,9 +51,38 @@ export default function App() {
     setSelectedGame(game);
     setTheaterMode(false); 
     setUseAltMirror(false);
+    setActiveTab('Home'); // Ensure context switch back to home view for game player
     setLoadingStatus('Connecting...');
     setTimeout(() => setLoadingStatus('Establishing Tunnel...'), 1000);
     setTimeout(() => setLoadingStatus('Ready'), 2500);
+  };
+
+  const handleAiSearch = async () => {
+    if (!aiMessage.trim() || isAiLoading) return;
+    
+    const userMsg = aiMessage.trim();
+    setAiMessage('');
+    setChatHistory(prev => [...prev, { role: 'user', content: userMsg }]);
+    setIsAiLoading(true);
+
+    try {
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const response = await ai.models.generateContent({
+        model: "gemini-3.1-pro-preview",
+        contents: userMsg,
+        config: {
+          systemInstruction: "You are the Nexus Study Assistant, an advanced AI integrated into the NexusGames arcade. You excel at math, logical reasoning, and solving study problems. Provide concise but helpful answers. Format mathematical expressions clearly.",
+        }
+      });
+      
+      const aiText = response.text || "I'm having trouble thinking right now. Please try again.";
+      setChatHistory(prev => [...prev, { role: 'ai', content: aiText }]);
+    } catch (error) {
+      console.error("AI Error:", error);
+      setChatHistory(prev => [...prev, { role: 'ai', content: "Error: Failed to connect to the Nexus AI Core. Please check your network connection or try again later." }]);
+    } finally {
+      setIsAiLoading(false);
+    }
   };
 
   const navItems = [
@@ -41,6 +90,7 @@ export default function App() {
     { name: 'Trending', icon: TrendingUp },
     { name: 'New Releases', icon: Clock },
     { name: 'Favorites', icon: Star },
+    { name: 'Study AI', icon: Bot },
   ];
 
   return (
@@ -78,6 +128,42 @@ export default function App() {
         </div>
 
         <div className="flex items-center gap-4">
+          <a 
+            href="https://discord.gg/3DhevZH8" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 px-4 py-2 bg-[#5865F2] hover:bg-[#4752C4] text-white rounded-lg transition-all text-sm font-bold shadow-lg shadow-indigo-500/20"
+          >
+            <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+              <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993.023.032.061.047.085.028a19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.086 2.176 2.419 0 1.334-.966 2.419-2.176 2.419zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.086 2.176 2.419 0 1.334-.946 2.419-2.176 2.419z"/>
+            </svg>
+            Discord
+          </a>
+
+          <div className="relative hidden lg:block group">
+            <Globe className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${proxyQuery ? 'text-accent-green' : 'text-text-dim'}`} />
+            <input 
+              type="text" 
+              placeholder="Proxy Search (Google, YT...)"
+              className="w-[220px] bg-bg-dark border border-border-custom px-9 py-2 rounded-lg text-xs outline-none focus:border-accent-green transition-all placeholder:text-text-dim/50 focus:w-[280px]"
+              value={proxyQuery}
+              onChange={(e) => setProxyQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && proxyQuery) {
+                  const url = `/api/proxy?url=${encodeURIComponent(`https://www.google.com/search?q=${proxyQuery}`)}`;
+                  setProxyUrl(url);
+                  setBrowserInput(proxyQuery); // Show actual query in bar
+                  setSelectedGame(null);
+                  setActiveTab('Browser');
+                  setProxyQuery('');
+                }
+              }}
+            />
+            <div className="absolute -bottom-10 right-0 bg-panel-bg border border-border-custom p-2 rounded shadow-2xl opacity-0 group-focus-within:opacity-100 transition-opacity pointer-events-none transform translate-y-2 group-focus-within:translate-y-0 z-50">
+              <span className="text-[10px] text-accent-green font-bold uppercase whitespace-nowrap">Press Enter to Tunnel Search</span>
+            </div>
+          </div>
+
           <div className="text-right hidden sm:block">
             <div className="text-sm font-semibold">Guest Player</div>
             <div className="text-[11px] text-accent-green font-bold">1,240 XP Earned</div>
@@ -112,13 +198,30 @@ export default function App() {
                   {item.name}
                 </li>
               ))}
+              {proxyUrl && (
+                <li 
+                  onClick={() => {
+                    setActiveTab('Browser');
+                    setSelectedCategory(null);
+                    setSelectedGame(null);
+                  }}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer text-sm transition-all ${
+                    activeTab === 'Browser' 
+                      ? 'bg-accent-green/10 text-accent-green font-bold' 
+                      : 'text-text-dim hover:bg-white/5 hover:text-white'
+                  }`}
+                >
+                  <Globe className="w-4 h-4" />
+                  Browser
+                </li>
+              )}
             </ul>
           </div>
 
           <div>
             <h3 className="text-[11px] uppercase text-text-dim font-bold tracking-[1.5px] mb-4">Categories</h3>
             <ul className="space-y-2">
-              {['Horror', 'Strategy', 'Action', 'Puzzle', 'Racing', 'Platformer', 'Sports'].map((cat) => (
+              {['Horror', 'RPG', 'Sandbox', 'Strategy', 'Action', 'Puzzle', 'Racing', 'Platformer', 'Sports'].map((cat) => (
                 <li 
                   key={cat}
                   onClick={() => {
@@ -148,9 +251,182 @@ export default function App() {
         </aside>
 
         {/* Content Area */}
-        <main className="flex-1 overflow-y-auto p-8">
+        <main className="flex-1 overflow-y-auto p-8 relative">
           <AnimatePresence mode="wait">
-            {!selectedGame ? (
+            {activeTab === 'Browser' && proxyUrl ? (
+              <motion.div
+                key="proxy-browser"
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.02 }}
+                className="h-full flex flex-col gap-4"
+              >
+                <div className="flex items-center justify-between bg-panel-bg p-3 rounded-xl border border-border-custom">
+                  <div className="flex items-center gap-4 flex-1">
+                    <div className="flex gap-2">
+                       <button 
+                         onClick={() => { const ifr = document.querySelector('iframe'); if(ifr) ifr.src = ifr.src; }}
+                         className="p-1 hover:bg-white/5 rounded text-text-dim transition-colors"
+                         title="Refresh"
+                       >
+                         <RefreshCw className="w-3.5 h-3.5" />
+                       </button>
+                    </div>
+                    <div className="flex-1 max-w-2xl relative">
+                      <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-accent-green" />
+                      <input 
+                        type="text"
+                        value={browserInput}
+                        onChange={(e) => setBrowserInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            let url = browserInput.trim();
+                            if (!url.startsWith('http')) {
+                              url = `https://www.google.com/search?q=${encodeURIComponent(url)}`;
+                            }
+                            const proxiedUrl = `/api/proxy?url=${encodeURIComponent(url)}`;
+                            setProxyUrl(proxiedUrl);
+                            setBrowserInput(url);
+                          }
+                        }}
+                        className="w-full bg-bg-dark border border-border-custom pl-9 pr-24 py-1.5 rounded-lg text-[12px] text-white outline-none focus:border-accent-green transition-all"
+                      />
+                      <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                        <span className="text-[9px] uppercase font-black text-text-dim/50 tracking-tighter">Nexus Tunnel</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={() => window.open(proxyUrl, '_blank')}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-accent-green/10 border border-accent-green/20 rounded-lg text-accent-green hover:bg-accent-green/20 transition-all text-[11px] font-bold"
+                      title="Open in New Tab (Bypass Frame Blocks)"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline uppercase">Breakout</span>
+                    </button>
+                    <button 
+                      onClick={() => { setProxyUrl(null); setBrowserInput(''); }}
+                      className="p-1.5 hover:bg-white/5 rounded-lg text-text-dim hover:text-accent-red transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+                <div className="flex-1 bg-white rounded-2xl overflow-hidden border-4 border-border-custom shadow-2xl relative">
+                   <div className="absolute top-2 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
+                     <span className="bg-black/80 px-3 py-1 rounded-full text-[10px] text-text-dim border border-white/10 backdrop-blur-sm">
+                       Note: Some sites block iframes. Use <b>BREAKOUT</b> to visit them.
+                     </span>
+                   </div>
+                   <iframe 
+                     src={proxyUrl}
+                     className="w-full h-full"
+                     title="Nexus Proxy Browser"
+                     allow="autoplay; fullscreen; microphone; camera; midi; geolocation;"
+                   />
+                </div>
+              </motion.div>
+            ) : !selectedGame && activeTab === 'Study AI' ? (
+              <motion.div
+                key="study-ai"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.05 }}
+                className="max-w-4xl mx-auto h-[calc(100vh-140px)] flex flex-col gap-6"
+              >
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-accent-green/20 rounded-lg">
+                      <Bot className="w-6 h-6 text-accent-green" />
+                    </div>
+                    <h2 className="text-2xl font-bold">Nexus AI <span className="text-accent-green">Study Hub</span></h2>
+                  </div>
+                  <p className="text-text-dim text-sm">Advanced GPT-powered assistant for math, logic, and comprehensive reading problems.</p>
+                </div>
+
+                <div className="flex-1 bg-panel-bg border border-border-custom rounded-2xl overflow-hidden shadow-2xl flex flex-col">
+                  <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                    {chatHistory.length === 0 ? (
+                      <div className="h-full flex flex-col items-center justify-center text-center gap-6 opacity-60">
+                        <div className="grid grid-cols-2 gap-4 max-w-lg">
+                          {[
+                            { icon: Calculator, text: "Solve advanced calculus problems" },
+                            { icon: MessageSquare, text: "Analyze literature and reading passages" },
+                            { icon: Brain, text: "Logical puzzles and critical thinking" },
+                            { icon: Sparkles, text: "General knowledge and explanations" }
+                          ].map((feature, i) => (
+                            <div key={i} className="p-4 border border-border-custom bg-bg-dark/50 rounded-xl flex flex-col items-center gap-3">
+                              <feature.icon className="w-6 h-6 text-accent-green" />
+                              <span className="text-xs font-semibold">{feature.text}</span>
+                            </div>
+                          ))}
+                        </div>
+                        <p className="text-sm">Type your math problem or reading task below to begin.</p>
+                      </div>
+                    ) : (
+                      chatHistory.map((chat, i) => (
+                        <div key={i} className={`flex gap-4 ${chat.role === 'ai' ? 'bg-white/5 p-4 rounded-xl border border-white/5' : ''}`}>
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                            chat.role === 'ai' ? 'bg-accent-green text-black' : 'bg-blue-600 text-white'
+                          }`}>
+                            {chat.role === 'ai' ? <Bot className="w-4 h-4" /> : <User className="w-4 h-4" />}
+                          </div>
+                          <div className="flex-1">
+                            <div className="text-[10px] uppercase font-bold text-text-dim mb-1 tracking-widest">
+                              {chat.role === 'ai' ? 'Nexus Core Intelligence' : 'Authenticated User'}
+                            </div>
+                            <div className="text-sm leading-relaxed whitespace-pre-wrap">
+                              {chat.content}
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                    {isAiLoading && (
+                      <div className="flex gap-4 animate-pulse">
+                        <div className="w-8 h-8 rounded-full bg-accent-green/20 flex items-center justify-center shrink-0">
+                          <Bot className="w-4 h-4 text-accent-green" />
+                        </div>
+                        <div className="flex-1 space-y-2">
+                          <div className="h-2 w-24 bg-border-custom rounded" />
+                          <div className="h-2 w-full bg-border-custom rounded" />
+                          <div className="h-2 w-3/4 bg-border-custom rounded" />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="p-4 bg-bg-dark/50 border-t border-border-custom">
+                    <div className="relative">
+                      <textarea
+                        rows={1}
+                        placeholder="Solve 2x + 5 = 15 or paste a reading passage..."
+                        className="w-full bg-panel-bg border border-border-custom pr-12 pl-4 py-4 rounded-xl text-sm outline-none focus:border-accent-green transition-all resize-none max-h-[200px]"
+                        value={aiMessage}
+                        onChange={(e) => setAiMessage(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            handleAiSearch();
+                          }
+                        }}
+                      />
+                      <button 
+                        onClick={handleAiSearch}
+                        disabled={!aiMessage.trim() || isAiLoading}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-accent-green text-black rounded-lg hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100 transition-all shadow-lg shadow-accent-green/20"
+                      >
+                        <Send className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <div className="mt-2 text-center text-[10px] text-text-dim font-bold tracking-widest uppercase">
+                      Neural Tunnel Encrypted // v3.1 Pro Core
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            ) : !selectedGame ? (
               <motion.div 
                 key="grid"
                 initial={{ opacity: 0 }}
@@ -180,6 +456,7 @@ export default function App() {
                         <img 
                           src={game.thumbnail} 
                           alt={game.title}
+                          referrerPolicy="no-referrer"
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 opacity-60 group-hover:opacity-100"
                         />
                         <div className="absolute inset-0 bg-linear-to-t from-panel-bg/80 to-transparent" />
@@ -256,7 +533,7 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className={`flex-1 bg-panel-bg rounded-2xl border border-border-custom overflow-hidden shadow-2xl relative min-h-[400px] ${theaterMode ? 'fixed inset-0 z-[100] rounded-0 border-none' : ''}`}>
+                <div className={`flex-1 bg-panel-bg rounded-2xl border border-border-custom overflow-hidden shadow-2xl relative min-h-[400px] flex items-center justify-center ${theaterMode ? 'fixed inset-0 z-[100] rounded-0 border-none' : ''}`}>
                   {theaterMode && (
                     <button 
                       onClick={() => setTheaterMode(false)}
@@ -271,15 +548,17 @@ export default function App() {
                       <Game2048 />
                     </div>
                   ) : (
-                    <iframe 
-                      src={useAltMirror && selectedGame.altEmbedUrl ? selectedGame.altEmbedUrl : selectedGame.embedUrl} 
-                      className="w-full h-full border-none bg-black"
-                      title={selectedGame.title}
-                      allow="autoplay; fullscreen; keyboard; gamepad; pointer-lock"
-                      sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-pointer-lock"
-                      allowFullScreen
-                      referrerPolicy="no-referrer"
-                    />
+                    <div className={selectedGame.aspectRatio ? 'w-full relative' : 'w-full h-full'} style={selectedGame.aspectRatio ? { paddingBottom: `${(1 / eval(selectedGame.aspectRatio)) * 100}%`, height: 0 } : {}}>
+                      <iframe 
+                        src={useAltMirror && selectedGame.altEmbedUrl ? selectedGame.altEmbedUrl : selectedGame.embedUrl} 
+                        className={`border-none bg-black ${selectedGame.aspectRatio ? 'absolute top-0 left-0 w-full h-full' : 'w-full h-full'}`}
+                        title={selectedGame.title}
+                        allow="autoplay; fullscreen; keyboard; gamepad; pointer-lock"
+                        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-pointer-lock"
+                        allowFullScreen
+                        referrerPolicy="no-referrer"
+                      />
+                    </div>
                   )}
                 </div>
 
