@@ -16,7 +16,8 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [theaterMode, setTheaterMode] = useState(false);
   const [studyMode, setStudyMode] = useState<'ai' | 'proxy'>('ai');
-  const [proxyNode, setProxyNode] = useState('Node-A (Nexus Base)');
+  const [proxyNode, setProxyNode] = useState('Nexus Stealth Proxy');
+  const [internalResearchUrl, setInternalResearchUrl] = useState<string | null>(null);
   const [useAltMirror, setUseAltMirror] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState('Idle');
   const [proxyQuery, setProxyQuery] = useState('');
@@ -38,6 +39,14 @@ export default function App() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && theaterMode) setTheaterMode(false);
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [theaterMode]);
 
   const filteredGames = useMemo(() => {
     return GAMES_DATA.filter(game => {
@@ -252,7 +261,7 @@ export default function App() {
         </aside>
 
         {/* Content Area */}
-        <main className={`flex-1 overflow-hidden relative ${activeTab === 'Study AI' && !selectedGame ? 'p-0' : 'p-8 overflow-y-auto'}`}>
+        <main className={`flex-1 relative ${theaterMode ? 'z-[9999]' : ''} ${activeTab === 'Study AI' && !selectedGame ? 'p-0 overflow-hidden' : 'p-8 overflow-y-auto'}`}>
           <AnimatePresence mode="wait">
             {activeTab === 'Browser' && proxyUrl ? (
               <motion.div
@@ -360,19 +369,32 @@ export default function App() {
                           <Globe className="w-4 h-4 text-accent-green" />
                           <select 
                             value={proxyNode}
-                            onChange={(e) => setProxyNode(e.target.value)}
+                            onChange={(e) => {
+                              setProxyNode(e.target.value);
+                              if (e.target.value !== 'Nexus Stealth Proxy') {
+                                setInternalResearchUrl(null);
+                              }
+                            }}
                             className="bg-bg-dark border border-border-custom text-[10px] uppercase font-bold text-white px-3 py-1.5 rounded-lg outline-none focus:border-accent-green cursor-pointer"
                           >
+                            <option>Nexus Stealth Proxy</option>
                             <option>Node-A (Nexus Base)</option>
                             <option>Node-B (Stealth Tunnel)</option>
                             <option>Node-C (Encrypted Relay)</option>
-                            <option>Node-D (Public Mirror)</option>
                           </select>
                         </div>
                       )}
                     </div>
 
                     <div className="flex items-center gap-3">
+                      {internalResearchUrl && (
+                        <button 
+                          onClick={() => setInternalResearchUrl(null)}
+                          className="px-3 py-1 bg-accent-red text-white text-[9px] uppercase font-bold rounded hover:bg-red-600 transition-colors"
+                        >
+                          Exit Browser
+                        </button>
+                      )}
                       <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-black/40 rounded-full border border-white/5">
                         <div className="w-1.5 h-1.5 rounded-full bg-accent-green animate-pulse" />
                         <span className="text-[9px] uppercase font-bold text-accent-green tracking-tighter">Connection Secure</span>
@@ -393,6 +415,14 @@ export default function App() {
                           <span className="text-[10px] font-bold text-white uppercase tracking-widest">Nexus Neural Core</span>
                         </div>
                       </>
+                    ) : internalResearchUrl ? (
+                      <div className="w-full h-full bg-bg-dark flex flex-col">
+                        <iframe 
+                          src={internalResearchUrl}
+                          className="w-full h-full border-none"
+                          title="Internal Research Node"
+                        />
+                      </div>
                     ) : (
                       <div className="w-full h-full flex flex-col items-center justify-center p-8 text-center bg-bg-dark">
                          <div className="max-w-2xl w-full space-y-8">
@@ -417,15 +447,41 @@ export default function App() {
                                            if (!url.startsWith('http')) {
                                               url = `https://www.google.com/search?q=${encodeURIComponent(url)}`;
                                            }
-                                           window.open(`/api/proxy?url=${encodeURIComponent(url)}&node=${encodeURIComponent(proxyNode)}`, '_blank');
+                                           const proxied = `/api/proxy?url=${encodeURIComponent(url)}&node=${encodeURIComponent(proxyNode)}`;
+                                           
+                                           if (proxyNode === 'Nexus Stealth Proxy') {
+                                              setInternalResearchUrl(proxied);
+                                           } else {
+                                              window.open(proxied, '_blank');
+                                           }
                                         }
                                       }}
                                     />
                                     <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-3">
                                        <span className="text-[10px] font-bold text-text-dim uppercase tracking-widest hidden sm:block">Press Enter</span>
-                                       <div className="p-2 bg-accent-green text-black rounded-lg">
+                                       <button 
+                                          onClick={() => {
+                                            const inputEl = document.querySelector('input[placeholder="Paste URL or search anything..."]') as HTMLInputElement;
+                                            if (inputEl) {
+                                              const input = inputEl.value.trim();
+                                              if (input) {
+                                                let url = input;
+                                                if (!url.startsWith('http')) {
+                                                  url = `https://www.google.com/search?q=${encodeURIComponent(url)}`;
+                                                }
+                                                const proxied = `/api/proxy?url=${encodeURIComponent(url)}&node=${encodeURIComponent(proxyNode)}`;
+                                                if (proxyNode === 'Nexus Stealth Proxy') {
+                                                  setInternalResearchUrl(proxied);
+                                                } else {
+                                                  window.open(proxied, '_blank');
+                                                }
+                                              }
+                                            }
+                                          }}
+                                          className="p-2 bg-accent-green text-black rounded-lg hover:scale-105 transition-transform"
+                                       >
                                           <ExternalLink className="w-4 h-4" />
-                                       </div>
+                                       </button>
                                     </div>
                                   </div>
 
@@ -438,7 +494,14 @@ export default function App() {
                                      ].map(link => (
                                        <button 
                                           key={link.name}
-                                          onClick={() => window.open(`/api/proxy?url=${encodeURIComponent(link.url)}&node=${encodeURIComponent(proxyNode)}`, '_blank')}
+                                          onClick={() => {
+                                            const proxied = `/api/proxy?url=${encodeURIComponent(link.url)}&node=${encodeURIComponent(proxyNode)}`;
+                                            if (proxyNode === 'Nexus Stealth Proxy') {
+                                              setInternalResearchUrl(proxied);
+                                            } else {
+                                              window.open(proxied, '_blank');
+                                            }
+                                          }}
                                           className="p-3 bg-bg-dark border border-border-custom rounded-xl text-[11px] font-bold uppercase tracking-widest text-text-dim hover:text-accent-green hover:border-accent-green transition-all"
                                        >
                                           {link.name}
@@ -531,9 +594,8 @@ export default function App() {
               <motion.div 
                 key="play"
                 initial={{ opacity: 0, y: 20 }}
-                animate={theaterMode ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
-                transition={{ duration: theaterMode ? 0 : 0.3 }}
-                className="h-full flex flex-col gap-6"
+                animate={theaterMode ? { opacity: 1, y: 0, transition: { duration: 0 } } : { opacity: 1, y: 0 }}
+                className={`h-full flex flex-col gap-6 ${theaterMode ? '!transform-none' : ''}`}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
@@ -574,9 +636,9 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className={`flex-1 bg-panel-bg rounded-2xl border border-border-custom overflow-hidden shadow-2xl relative min-h-[400px] flex items-center justify-center ${theaterMode ? 'fixed inset-0 z-[9999] bg-black/95 backdrop-blur-3xl p-4 sm:p-12' : ''}`}>
+                <div className={`flex-1 bg-panel-bg rounded-2xl border border-border-custom overflow-hidden shadow-2xl relative min-h-[400px] flex items-center justify-center ${theaterMode ? 'fixed inset-0 z-[10000] bg-black/98 backdrop-blur-3xl' : ''}`}>
                   {theaterMode && (
-                    <div className="absolute top-6 right-6 z-[10000] flex gap-4">
+                    <div className="absolute top-6 right-6 z-[11000] flex gap-4">
                       <div className="hidden md:flex items-center gap-2 bg-black/50 px-3 py-1.5 rounded-full border border-white/10 text-[10px] uppercase font-bold text-text-dim">
                         <LayoutGrid className="w-3 h-3 text-accent-green" />
                         Theater Mode Active
@@ -590,10 +652,10 @@ export default function App() {
                       </button>
                     </div>
                   )}
-                  <div className={`${selectedGame.aspectRatio ? 'w-full relative' : 'w-full h-full'} ${theaterMode ? 'max-w-6xl mx-auto shadow-[0_0_100px_rgba(0,0,0,0.5)]' : ''}`} style={selectedGame.aspectRatio ? { paddingBottom: theaterMode ? '0' : `${(1 / (eval(selectedGame.aspectRatio) || 1.77)) * 100}%`, height: theaterMode ? '80vh' : 0 } : {}}>
+                  <div className={`${selectedGame.aspectRatio ? 'w-full relative' : 'w-full h-full'} ${theaterMode ? 'w-full h-full flex items-center justify-center' : ''}`} style={selectedGame.aspectRatio ? { paddingBottom: theaterMode ? '0' : `${(1 / (eval(selectedGame.aspectRatio) || 1.77)) * 100}%`, height: theaterMode ? '90vh' : 0 } : {}}>
                     <iframe 
                       src={useAltMirror && selectedGame.altEmbedUrl ? selectedGame.altEmbedUrl : selectedGame.embedUrl} 
-                      className={`border-none bg-black transition-all duration-500 ${selectedGame.aspectRatio && !theaterMode ? 'absolute top-0 left-0 w-full h-full' : 'w-full h-full rounded-xl'}`}
+                      className={`border-none bg-black transition-all duration-500 ${theaterMode ? 'w-[95vw] h-[85vh] rounded-2xl shadow-[0_0_100px_rgba(0,0,0,0.8)] border border-white/10' : selectedGame.aspectRatio ? 'absolute top-0 left-0 w-full h-full' : 'w-full h-full rounded-xl'}`}
                       title={selectedGame.title}
                       allow="autoplay; fullscreen; keyboard; gamepad; pointer-lock"
                       sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-pointer-lock"
