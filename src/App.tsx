@@ -330,100 +330,26 @@ export default function App() {
             ) : !selectedGame && activeTab === 'Study AI' ? (
               <motion.div
                 key="study-ai"
-                initial={{ opacity: 0, scale: 0.95 }}
+                initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 1.05 }}
-                className="max-w-4xl mx-auto h-[calc(100vh-140px)] flex flex-col gap-6"
+                exit={{ opacity: 0, scale: 1.02 }}
+                className="h-full flex flex-col gap-4"
               >
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2 mb-2">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-accent-green/20 rounded-lg">
                       <Bot className="w-6 h-6 text-accent-green" />
                     </div>
                     <h2 className="text-2xl font-bold">Nexus AI <span className="text-accent-green">Study Hub</span></h2>
                   </div>
-                  <p className="text-text-dim text-sm">Advanced GPT-powered assistant for math, logic, and comprehensive reading problems.</p>
+                  <p className="text-text-dim text-sm">Advanced AI learning assistant for complex math and logical reasoning.</p>
                 </div>
-
-                <div className="flex-1 bg-panel-bg border border-border-custom rounded-2xl overflow-hidden shadow-2xl flex flex-col">
-                  <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                    {chatHistory.length === 0 ? (
-                      <div className="h-full flex flex-col items-center justify-center text-center gap-6 opacity-60">
-                        <div className="grid grid-cols-2 gap-4 max-w-lg">
-                          {[
-                            { icon: Calculator, text: "Solve advanced calculus problems" },
-                            { icon: MessageSquare, text: "Analyze literature and reading passages" },
-                            { icon: Brain, text: "Logical puzzles and critical thinking" },
-                            { icon: Sparkles, text: "General knowledge and explanations" }
-                          ].map((feature, i) => (
-                            <div key={i} className="p-4 border border-border-custom bg-bg-dark/50 rounded-xl flex flex-col items-center gap-3">
-                              <feature.icon className="w-6 h-6 text-accent-green" />
-                              <span className="text-xs font-semibold">{feature.text}</span>
-                            </div>
-                          ))}
-                        </div>
-                        <p className="text-sm">Type your math problem or reading task below to begin.</p>
-                      </div>
-                    ) : (
-                      chatHistory.map((chat, i) => (
-                        <div key={i} className={`flex gap-4 ${chat.role === 'ai' ? 'bg-white/5 p-4 rounded-xl border border-white/5' : ''}`}>
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                            chat.role === 'ai' ? 'bg-accent-green text-black' : 'bg-blue-600 text-white'
-                          }`}>
-                            {chat.role === 'ai' ? <Bot className="w-4 h-4" /> : <User className="w-4 h-4" />}
-                          </div>
-                          <div className="flex-1">
-                            <div className="text-[10px] uppercase font-bold text-text-dim mb-1 tracking-widest">
-                              {chat.role === 'ai' ? 'Nexus Core Intelligence' : 'Authenticated User'}
-                            </div>
-                            <div className="text-sm leading-relaxed whitespace-pre-wrap">
-                              {chat.content}
-                            </div>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                    {isAiLoading && (
-                      <div className="flex gap-4 animate-pulse">
-                        <div className="w-8 h-8 rounded-full bg-accent-green/20 flex items-center justify-center shrink-0">
-                          <Bot className="w-4 h-4 text-accent-green" />
-                        </div>
-                        <div className="flex-1 space-y-2">
-                          <div className="h-2 w-24 bg-border-custom rounded" />
-                          <div className="h-2 w-full bg-border-custom rounded" />
-                          <div className="h-2 w-3/4 bg-border-custom rounded" />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="p-4 bg-bg-dark/50 border-t border-border-custom">
-                    <div className="relative">
-                      <textarea
-                        rows={1}
-                        placeholder="Solve 2x + 5 = 15 or paste a reading passage..."
-                        className="w-full bg-panel-bg border border-border-custom pr-12 pl-4 py-4 rounded-xl text-sm outline-none focus:border-accent-green transition-all resize-none max-h-[200px]"
-                        value={aiMessage}
-                        onChange={(e) => setAiMessage(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            handleAiSearch();
-                          }
-                        }}
-                      />
-                      <button 
-                        onClick={handleAiSearch}
-                        disabled={!aiMessage.trim() || isAiLoading}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-accent-green text-black rounded-lg hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100 transition-all shadow-lg shadow-accent-green/20"
-                      >
-                        <Send className="w-4 h-4" />
-                      </button>
-                    </div>
-                    <div className="mt-2 text-center text-[10px] text-text-dim font-bold tracking-widest uppercase">
-                      Neural Tunnel Encrypted // v3.1 Pro Core
-                    </div>
-                  </div>
+                <div className="flex-1 bg-white rounded-2xl overflow-hidden border-4 border-border-custom shadow-2xl">
+                  <iframe 
+                    src="https://chatbot.getmindpal.com/nexus-ai-4cz"
+                    className="w-full h-full"
+                    title="Nexus AI Hub"
+                  />
                 </div>
               </motion.div>
             ) : !selectedGame ? (
