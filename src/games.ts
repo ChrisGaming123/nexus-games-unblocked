@@ -348,5 +348,22 @@ export const GAMES_DATA: Game[] = [
     thumbnail: 'https://images.crazygames.com/hazmob-fps-online-shooter/20221013141044/hazmob-fps-online-shooter-cover?auto=format,compress&q=75&cs=strip&ch=DPR&w=1200&h=630&fit=crop',
     description: 'Intense online first-person shooter action inspired by classic Counter-Strike gameplay.',
     embedUrl: 'https://playgama.com/export/game/hazmob-fps-online-shooter'
+  },
+  {
+    id: 'trees-hate-you',
+    title: 'Trees Hate You',
+    genre: 'Horror',
+    thumbnail: 'https://images.crazygames.com/trees-hate-you/20210311100511/trees-hate-you-cover?auto=format,compress&q=75&cs=strip&ch=DPR&w=1200&h=630&fit=crop',
+    description: 'A dark and surreal horror experience where nature has turned against you. Watch your back.',
+    embedUrl: 'https://yoplay.io/trees-hate-you.embed'
+  },
+  {
+    id: 'bendy-ink-machine',
+    title: 'Bendy and the Ink Machine',
+    genre: 'Horror',
+    thumbnail: 'https://cdn.akamai.steamstatic.com/steam/apps/622650/header.jpg',
+    description: 'Explore the abandoned Joey Drew Studios in this first-person puzzle-action-horror game with a unique cartoon aesthetic.',
+    embedUrl: 'https://horrorgames.io/bendy-and-the-ink-machine',
+    aspectRatio: '16/9'
   }
 ];

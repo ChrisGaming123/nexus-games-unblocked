@@ -5,7 +5,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, Play, X, Gamepad2, TrendingUp, Clock, Star, LayoutGrid, Ghost, Globe, Bot, Send, User, Sparkles, Brain, Calculator, MessageSquare, ExternalLink, RefreshCw } from 'lucide-react';
+import { Search, Play, X, Gamepad2, TrendingUp, Clock, Star, LayoutGrid, Ghost, Globe, Bot, Send, User, Sparkles, Brain, Calculator, MessageSquare, ExternalLink, RefreshCw, Shield } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 import { GAMES_DATA, type Game } from './games';
 
@@ -15,6 +15,8 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('Home');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [theaterMode, setTheaterMode] = useState(false);
+  const [studyMode, setStudyMode] = useState<'ai' | 'proxy'>('ai');
+  const [proxyNode, setProxyNode] = useState('Node-A (Nexus Base)');
   const [useAltMirror, setUseAltMirror] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState('Idle');
   const [proxyQuery, setProxyQuery] = useState('');
@@ -334,16 +336,134 @@ export default function App() {
                 exit={{ opacity: 0 }}
                 className="h-full w-full flex flex-col bg-bg-dark"
               >
-                <div className="flex-1 overflow-hidden relative">
-                  <iframe 
-                    src="https://chatbot.getmindpal.com/nexus-ai-4cz"
-                    className="w-full h-full border-none"
-                    title="Nexus AI Hub"
-                  />
-                  {/* Floating HUD info */}
-                  <div className="absolute top-4 left-4 z-10 pointer-events-none flex items-center gap-3 bg-black/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 shadow-2xl">
-                    <Bot className="w-4 h-4 text-accent-green" />
-                    <span className="text-[10px] font-bold text-white uppercase tracking-widest">Nexus AI Immersive Hub</span>
+                <div className="flex-1 overflow-hidden relative flex flex-col">
+                  {/* Mode Selector */}
+                  <div className="bg-panel-bg/80 backdrop-blur-md border-b border-border-custom p-3 flex items-center justify-between z-20">
+                    <div className="flex items-center gap-6">
+                      <div className="flex bg-bg-dark p-1 rounded-lg border border-border-custom">
+                        <button 
+                          onClick={() => setStudyMode('ai')}
+                          className={`px-4 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-widest transition-all ${studyMode === 'ai' ? 'bg-accent-green text-black' : 'text-text-dim hover:text-white'}`}
+                        >
+                          Core AI
+                        </button>
+                        <button 
+                          onClick={() => setStudyMode('proxy')}
+                          className={`px-4 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-widest transition-all ${studyMode === 'proxy' ? 'bg-accent-green text-black' : 'text-text-dim hover:text-white'}`}
+                        >
+                          Research Node
+                        </button>
+                      </div>
+                      
+                      {studyMode === 'proxy' && (
+                        <div className="flex items-center gap-3">
+                          <Globe className="w-4 h-4 text-accent-green" />
+                          <select 
+                            value={proxyNode}
+                            onChange={(e) => setProxyNode(e.target.value)}
+                            className="bg-bg-dark border border-border-custom text-[10px] uppercase font-bold text-white px-3 py-1.5 rounded-lg outline-none focus:border-accent-green cursor-pointer"
+                          >
+                            <option>Node-A (Nexus Base)</option>
+                            <option>Node-B (Stealth Tunnel)</option>
+                            <option>Node-C (Encrypted Relay)</option>
+                            <option>Node-D (Public Mirror)</option>
+                          </select>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-black/40 rounded-full border border-white/5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-accent-green animate-pulse" />
+                        <span className="text-[9px] uppercase font-bold text-accent-green tracking-tighter">Connection Secure</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex-1 relative">
+                    {studyMode === 'ai' ? (
+                      <>
+                        <iframe 
+                          src="https://chatbot.getmindpal.com/nexus-ai-4cz"
+                          className="w-full h-full border-none"
+                          title="Nexus AI Hub"
+                        />
+                        <div className="absolute top-4 left-4 z-10 pointer-events-none flex items-center gap-3 bg-black/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 shadow-2xl">
+                          <Bot className="w-4 h-4 text-accent-green" />
+                          <span className="text-[10px] font-bold text-white uppercase tracking-widest">Nexus Neural Core</span>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center p-8 text-center bg-bg-dark">
+                         <div className="max-w-2xl w-full space-y-8">
+                            <div className="space-y-2">
+                               <h2 className="text-4xl font-black text-white uppercase tracking-tighter">Nexus <span className="text-accent-green">Research Node</span></h2>
+                               <p className="text-text-dim text-sm">Bypass filters and access the open web for your research and study needs.</p>
+                            </div>
+
+                            <div className="relative group">
+                               <div className="absolute -inset-1 bg-accent-green/20 rounded-2xl blur-lg group-hover:bg-accent-green/30 transition-all opacity-50" />
+                               <div className="relative bg-panel-bg rounded-2xl border border-border-custom p-6 shadow-2xl space-y-4">
+                                  <div className="relative">
+                                    <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-accent-green" />
+                                    <input 
+                                      type="text"
+                                      placeholder="Paste URL or search anything..."
+                                      className="w-full bg-bg-dark border border-border-custom rounded-xl py-4 pl-12 pr-32 text-sm text-white focus:border-accent-green outline-none transition-all"
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                           const input = (e.target as HTMLInputElement).value.trim();
+                                           let url = input;
+                                           if (!url.startsWith('http')) {
+                                              url = `https://www.google.com/search?q=${encodeURIComponent(url)}`;
+                                           }
+                                           window.open(`/api/proxy?url=${encodeURIComponent(url)}&node=${encodeURIComponent(proxyNode)}`, '_blank');
+                                        }
+                                      }}
+                                    />
+                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-3">
+                                       <span className="text-[10px] font-bold text-text-dim uppercase tracking-widest hidden sm:block">Press Enter</span>
+                                       <div className="p-2 bg-accent-green text-black rounded-lg">
+                                          <ExternalLink className="w-4 h-4" />
+                                       </div>
+                                    </div>
+                                  </div>
+
+                                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                     {[
+                                       { name: 'Google', url: 'https://google.com' },
+                                       { name: 'YouTube', url: 'https://youtube.com' },
+                                       { name: 'Wikipedia', url: 'https://wikipedia.org' },
+                                       { name: 'Chat GPT', url: 'https://chat.openai.com' }
+                                     ].map(link => (
+                                       <button 
+                                          key={link.name}
+                                          onClick={() => window.open(`/api/proxy?url=${encodeURIComponent(link.url)}&node=${encodeURIComponent(proxyNode)}`, '_blank')}
+                                          className="p-3 bg-bg-dark border border-border-custom rounded-xl text-[11px] font-bold uppercase tracking-widest text-text-dim hover:text-accent-green hover:border-accent-green transition-all"
+                                       >
+                                          {link.name}
+                                       </button>
+                                     ))}
+                                  </div>
+                               </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-8">
+                               {[
+                                 { icon: Globe, title: "Unblocked Access", desc: "Bypass any site restrictions instantly." },
+                                 { icon: Brain, title: "Research Assistant", desc: "Integrated tools for deep information gathering." },
+                                 { icon: Shield, title: "Encrypted Link", desc: "Military grade tunnel protection active." }
+                               ].map((feat, i) => (
+                                 <div key={i} className="space-y-2">
+                                    <feat.icon className="w-6 h-6 text-accent-green mx-auto" />
+                                    <div className="text-[12px] font-bold uppercase tracking-widest text-white">{feat.title}</div>
+                                    <div className="text-[10px] text-text-dim">{feat.desc}</div>
+                                 </div>
+                               ))}
+                            </div>
+                         </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </motion.div>
