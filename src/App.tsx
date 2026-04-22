@@ -8,7 +8,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Search, Play, X, Gamepad2, TrendingUp, Clock, Star, LayoutGrid, Ghost, Globe, Bot, Send, User, Sparkles, Brain, Calculator, MessageSquare, ExternalLink, RefreshCw } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 import { GAMES_DATA, type Game } from './games';
-import Game2048 from './components/Game2048';
 
 export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -251,7 +250,7 @@ export default function App() {
         </aside>
 
         {/* Content Area */}
-        <main className="flex-1 overflow-y-auto p-8 relative">
+        <main className={`flex-1 overflow-hidden relative ${activeTab === 'Study AI' && !selectedGame ? 'p-0' : 'p-8 overflow-y-auto'}`}>
           <AnimatePresence mode="wait">
             {activeTab === 'Browser' && proxyUrl ? (
               <motion.div
@@ -330,26 +329,22 @@ export default function App() {
             ) : !selectedGame && activeTab === 'Study AI' ? (
               <motion.div
                 key="study-ai"
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 1.02 }}
-                className="h-full flex flex-col gap-4"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="h-full w-full flex flex-col bg-bg-dark"
               >
-                <div className="flex flex-col gap-2 mb-2">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-accent-green/20 rounded-lg">
-                      <Bot className="w-6 h-6 text-accent-green" />
-                    </div>
-                    <h2 className="text-2xl font-bold">Nexus AI <span className="text-accent-green">Study Hub</span></h2>
-                  </div>
-                  <p className="text-text-dim text-sm">Advanced AI learning assistant for complex math and logical reasoning.</p>
-                </div>
-                <div className="flex-1 bg-white rounded-2xl overflow-hidden border-4 border-border-custom shadow-2xl">
+                <div className="flex-1 overflow-hidden relative">
                   <iframe 
                     src="https://chatbot.getmindpal.com/nexus-ai-4cz"
-                    className="w-full h-full"
+                    className="w-full h-full border-none"
                     title="Nexus AI Hub"
                   />
+                  {/* Floating HUD info */}
+                  <div className="absolute top-4 left-4 z-10 pointer-events-none flex items-center gap-3 bg-black/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 shadow-2xl">
+                    <Bot className="w-4 h-4 text-accent-green" />
+                    <span className="text-[10px] font-bold text-white uppercase tracking-widest">Nexus AI Immersive Hub</span>
+                  </div>
                 </div>
               </motion.div>
             ) : !selectedGame ? (
@@ -416,8 +411,8 @@ export default function App() {
               <motion.div 
                 key="play"
                 initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
+                animate={theaterMode ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
+                transition={{ duration: theaterMode ? 0 : 0.3 }}
                 className="h-full flex flex-col gap-6"
               >
                 <div className="flex items-center justify-between">
@@ -459,33 +454,33 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className={`flex-1 bg-panel-bg rounded-2xl border border-border-custom overflow-hidden shadow-2xl relative min-h-[400px] flex items-center justify-center ${theaterMode ? 'fixed inset-0 z-[100] rounded-0 border-none' : ''}`}>
+                <div className={`flex-1 bg-panel-bg rounded-2xl border border-border-custom overflow-hidden shadow-2xl relative min-h-[400px] flex items-center justify-center ${theaterMode ? 'fixed inset-0 z-[9999] bg-black/95 backdrop-blur-3xl p-4 sm:p-12' : ''}`}>
                   {theaterMode && (
-                    <button 
-                      onClick={() => setTheaterMode(false)}
-                      className="absolute top-4 right-4 z-[110] p-2 bg-black/60 hover:bg-black/90 text-white rounded-full transition-all border border-white/20"
-                      title="Exit Theater Mode"
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
-                  )}
-                  {selectedGame.isInternal ? (
-                    <div className="w-full h-full flex items-center justify-center p-4">
-                      <Game2048 />
-                    </div>
-                  ) : (
-                    <div className={selectedGame.aspectRatio ? 'w-full relative' : 'w-full h-full'} style={selectedGame.aspectRatio ? { paddingBottom: `${(1 / eval(selectedGame.aspectRatio)) * 100}%`, height: 0 } : {}}>
-                      <iframe 
-                        src={useAltMirror && selectedGame.altEmbedUrl ? selectedGame.altEmbedUrl : selectedGame.embedUrl} 
-                        className={`border-none bg-black ${selectedGame.aspectRatio ? 'absolute top-0 left-0 w-full h-full' : 'w-full h-full'}`}
-                        title={selectedGame.title}
-                        allow="autoplay; fullscreen; keyboard; gamepad; pointer-lock"
-                        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-pointer-lock"
-                        allowFullScreen
-                        referrerPolicy="no-referrer"
-                      />
+                    <div className="absolute top-6 right-6 z-[10000] flex gap-4">
+                      <div className="hidden md:flex items-center gap-2 bg-black/50 px-3 py-1.5 rounded-full border border-white/10 text-[10px] uppercase font-bold text-text-dim">
+                        <LayoutGrid className="w-3 h-3 text-accent-green" />
+                        Theater Mode Active
+                      </div>
+                      <button 
+                        onClick={() => setTheaterMode(false)}
+                        className="p-3 bg-accent-red hover:bg-red-600 text-white rounded-full transition-all shadow-2xl hover:scale-110 active:scale-95"
+                        title="Exit Theater Mode (Esc)"
+                      >
+                        <X className="w-6 h-6" />
+                      </button>
                     </div>
                   )}
+                  <div className={`${selectedGame.aspectRatio ? 'w-full relative' : 'w-full h-full'} ${theaterMode ? 'max-w-6xl mx-auto shadow-[0_0_100px_rgba(0,0,0,0.5)]' : ''}`} style={selectedGame.aspectRatio ? { paddingBottom: theaterMode ? '0' : `${(1 / (eval(selectedGame.aspectRatio) || 1.77)) * 100}%`, height: theaterMode ? '80vh' : 0 } : {}}>
+                    <iframe 
+                      src={useAltMirror && selectedGame.altEmbedUrl ? selectedGame.altEmbedUrl : selectedGame.embedUrl} 
+                      className={`border-none bg-black transition-all duration-500 ${selectedGame.aspectRatio && !theaterMode ? 'absolute top-0 left-0 w-full h-full' : 'w-full h-full rounded-xl'}`}
+                      title={selectedGame.title}
+                      allow="autoplay; fullscreen; keyboard; gamepad; pointer-lock"
+                      sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-pointer-lock"
+                      allowFullScreen
+                      referrerPolicy="no-referrer"
+                    />
+                  </div>
                 </div>
 
                 <div className="p-5 bg-panel-bg/50 rounded-2xl border border-border-custom flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">

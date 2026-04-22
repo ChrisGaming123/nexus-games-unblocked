@@ -86,12 +86,12 @@ export const GAMES_DATA: Game[] = [
     embedUrl: 'https://www.miniplay.com/embed/ultimate-custom-night'
   },
   {
-    id: '2048',
-    title: '2048',
+    id: 'snake-2048',
+    title: 'Snake 2048',
     genre: 'Puzzle',
-    thumbnail: 'https://2048game.com/meta/apple-touch-icon.png',
-    description: 'Join the numbers and get to the 2048 tile!',
-    isInternal: true
+    thumbnail: 'https://images.crazygames.com/snake-2048/20231121111044/snake-2048-cover?auto=format,compress&q=75&cs=strip&ch=DPR&w=1200&h=630&fit=crop',
+    description: 'A frantic mix of Snake and 2048. Eat numbers to grow and merge!',
+    embedUrl: 'https://playgama.com/export/game/snake-2048-64be-1'
   },
   {
     id: 'rocket-goal',
